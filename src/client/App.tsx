@@ -9,6 +9,10 @@ import StatsPage from './pages/StatsPage';
 import ReviewPage from './pages/ReviewPage';
 import WritingPage from './pages/WritingPage';
 import GraphPage from './pages/GraphPage';
+// 超级高级功能页面
+import NotesPage from './pages/NotesPage';
+import FocusPage from './pages/FocusPage';
+import ChallengePage from './pages/ChallengePage';
 
 function App() {
   return (
@@ -22,6 +26,10 @@ function App() {
         <Route path="review" element={<ReviewPage />} />
         <Route path="writing" element={<WritingPage />} />
         <Route path="graph" element={<GraphPage />} />
+        {/* 超级高级功能 */}
+        <Route path="notes" element={<NotesPage />} />
+        <Route path="focus" element={<FocusPage />} />
+        <Route path="challenges" element={<ChallengePage />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
     </Routes>

@@ -15,12 +15,18 @@ import {
   Network,
   Moon,
   Sun,
+  FileText,
+  Target,
+  Trophy,
 } from 'lucide-react';
 import ImportModal from './ImportModal';
 
 const navItems = [
   { to: '/', icon: BookOpen, label: '阅读列表' },
   { to: '/review', icon: Brain, label: '间隔复习' },
+  { to: '/notes', icon: FileText, label: '双向笔记' },
+  { to: '/focus', icon: Target, label: '专注模式' },
+  { to: '/challenges', icon: Trophy, label: '阅读挑战' },
   { to: '/stats', icon: BarChart3, label: '阅读统计' },
   { to: '/feeds', icon: Rss, label: 'RSS订阅' },
   { to: '/highlights', icon: Highlighter, label: '高亮笔记' },
@@ -155,7 +161,7 @@ export default function Layout() {
 
         {/* Version */}
         <div className={`absolute bottom-4 left-0 right-0 px-6 text-center text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-          AI Reader v2.0
+          AI Reader v3.0
         </div>
       </aside>
 
