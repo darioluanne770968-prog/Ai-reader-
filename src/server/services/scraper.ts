@@ -51,12 +51,69 @@ export async function scrapeUrl(url: string): Promise<ScrapedArticle> {
     $('meta[property="og:site_name"]').attr('content') ||
     new URL(url).hostname.replace('www.', '');
 
-  // 提取图片
-  const imageUrl =
+  // 提取封面图（增强版）
+  let imageUrl: string | null = null;
+
+  // 1. 首先尝试 Open Graph 和 Twitter Card
+  imageUrl =
     $('meta[property="og:image"]').attr('content') ||
+    $('meta[property="og:image:url"]').attr('content') ||
     $('meta[name="twitter:image"]').attr('content') ||
-    $('article img').first().attr('src') ||
+    $('meta[name="twitter:image:src"]').attr('content') ||
     null;
+
+  // 2. 如果没有，尝试查找文章中的主图
+  if (!imageUrl) {
+    // 查找 figure 标签中的图片（通常是主图）
+    const figureImg = $('article figure img, .post-content figure img, .article-content figure img').first();
+    if (figureImg.length) {
+      imageUrl = figureImg.attr('src') || figureImg.attr('data-src') || null;
+    }
+  }
+
+  // 3. 查找带有特定类名的图片
+  if (!imageUrl) {
+    const featuredImg = $('.featured-image img, .post-thumbnail img, .article-image img, .hero-image img, .cover-image img').first();
+    if (featuredImg.length) {
+      imageUrl = featuredImg.attr('src') || featuredImg.attr('data-src') || null;
+    }
+  }
+
+  // 4. 查找文章中第一张足够大的图片
+  if (!imageUrl) {
+    const articleImages = $('article img, .post-content img, .article-content img, .entry-content img, main img');
+    for (let i = 0; i < articleImages.length; i++) {
+      const img = articleImages.eq(i);
+      const src = img.attr('src') || img.attr('data-src');
+      const width = parseInt(img.attr('width') || '0', 10);
+      const height = parseInt(img.attr('height') || '0', 10);
+
+      // 跳过太小的图片（图标、表情等）
+      if (src && !src.includes('emoji') && !src.includes('icon') && !src.includes('avatar')) {
+        // 如果有尺寸信息，检查是否足够大
+        if (width && height) {
+          if (width >= 200 && height >= 150) {
+            imageUrl = src;
+            break;
+          }
+        } else {
+          // 没有尺寸信息，使用第一张非图标图片
+          imageUrl = src;
+          break;
+        }
+      }
+    }
+  }
+
+  // 5. 处理相对路径
+  if (imageUrl && !imageUrl.startsWith('http')) {
+    try {
+      const baseUrl = new URL(url);
+      imageUrl = new URL(imageUrl, baseUrl.origin).href;
+    } catch {
+      imageUrl = null;
+    }
+  }
 
   // 提取主要内容
   let content = '';

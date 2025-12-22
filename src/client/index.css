@@ -160,3 +160,80 @@ body {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+/* 护眼模式 (Sepia) */
+html.sepia {
+  --sepia-bg: #fef3c7;
+  --sepia-text: #78350f;
+  --sepia-border: #fcd34d;
+}
+
+html.sepia body {
+  background-color: #fef3c7;
+  color: #78350f;
+}
+
+html.sepia .bg-white {
+  background-color: #fef9c3 !important;
+}
+
+html.sepia .bg-gray-50 {
+  background-color: #fef3c7 !important;
+}
+
+html.sepia .text-gray-900 {
+  color: #78350f !important;
+}
+
+html.sepia .text-gray-600,
+html.sepia .text-gray-500 {
+  color: #92400e !important;
+}
+
+html.sepia .border-gray-200 {
+  border-color: #fcd34d !important;
+}
+
+html.sepia .article-content {
+  color: #78350f;
+}
+
+html.sepia .article-content blockquote {
+  color: #92400e;
+  border-left-color: #f59e0b;
+}
+
+html.sepia .article-content code {
+  background: #fde68a;
+}
+
+html.sepia .article-content pre {
+  background: #451a03;
+  color: #fef3c7;
+}
+
+/* 暗黑模式增强 */
+html.dark .article-content {
+  color: #e5e7eb;
+}
+
+html.dark .article-content blockquote {
+  color: #9ca3af;
+}
+
+html.dark .article-content code {
+  background: #374151;
+  color: #e5e7eb;
+}
+
+html.dark ::-webkit-scrollbar-track {
+  background: #1f2937;
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background: #4b5563;
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}

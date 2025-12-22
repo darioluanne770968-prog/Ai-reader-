@@ -36,4 +36,5 @@ export function initDatabase() {
   console.log('Database initialized successfully');
 }
 
+export { db };
 export default db;

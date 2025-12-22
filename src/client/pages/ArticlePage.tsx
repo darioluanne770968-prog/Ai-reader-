@@ -14,7 +14,12 @@ import {
   X,
   Send,
   ExternalLink,
+  Volume2,
+  Clock,
+  BookOpen,
+  Keyboard,
 } from 'lucide-react';
+import TTSPlayer from '../components/TTSPlayer';
 import type { Article, QAItem } from '../types';
 import { articlesApi, tagsApi, highlightsApi, exportApi } from '../api';
 
@@ -32,6 +37,8 @@ export default function ArticlePage() {
   const [askingQuestion, setAskingQuestion] = useState(false);
   const [newTag, setNewTag] = useState('');
   const [showTagInput, setShowTagInput] = useState(false);
+  const [showTTSPlayer, setShowTTSPlayer] = useState(false);
+  const [showShortcuts, setShowShortcuts] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -72,6 +79,67 @@ export default function ArticlePage() {
       }, 100);
     }
   }, [article]);
+
+  // 全局快捷键
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // 如果正在输入则忽略
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      switch (e.key.toLowerCase()) {
+        case 'escape':
+          if (showTTSPlayer) setShowTTSPlayer(false);
+          else if (showAIPanel) setShowAIPanel(false);
+          else if (showShortcuts) setShowShortcuts(false);
+          break;
+        case 't': // 切换 TTS
+          if (!e.metaKey && !e.ctrlKey) {
+            e.preventDefault();
+            setShowTTSPlayer(prev => !prev);
+          }
+          break;
+        case 'a': // 切换 AI 面板
+          if (!e.metaKey && !e.ctrlKey) {
+            e.preventDefault();
+            setShowAIPanel(prev => !prev);
+          }
+          break;
+        case 'f': // 收藏
+          if (!e.metaKey && !e.ctrlKey) {
+            e.preventDefault();
+            handleToggleFavorite();
+          }
+          break;
+        case 'r': // 标记已读
+          if (!e.metaKey && !e.ctrlKey) {
+            e.preventDefault();
+            handleMarkRead();
+          }
+          break;
+        case 's': // 生成摘要
+          if (!e.metaKey && !e.ctrlKey && !article?.summary) {
+            e.preventDefault();
+            handleGenerateSummary();
+          }
+          break;
+        case '?': // 显示快捷键帮助
+          e.preventDefault();
+          setShowShortcuts(prev => !prev);
+          break;
+        case 'backspace': // 返回
+          if (!e.metaKey && !e.ctrlKey) {
+            e.preventDefault();
+            navigate('/');
+          }
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [article, showTTSPlayer, showAIPanel, showShortcuts]);
 
   const fetchArticle = async () => {
     try {
@@ -242,11 +310,20 @@ export default function ArticlePage() {
 
           <div className="flex items-center gap-2">
             <button
+              onClick={() => setShowTTSPlayer(!showTTSPlayer)}
+              className={`p-2 rounded-lg transition-colors ${
+                showTTSPlayer ? 'bg-primary-100 text-primary-600' : 'hover:bg-gray-100'
+              }`}
+              title="朗读 (T)"
+            >
+              <Volume2 size={20} />
+            </button>
+            <button
               onClick={() => setShowAIPanel(!showAIPanel)}
               className={`p-2 rounded-lg transition-colors ${
                 showAIPanel ? 'bg-primary-100 text-primary-600' : 'hover:bg-gray-100'
               }`}
-              title="AI助手"
+              title="AI助手 (A)"
             >
               <MessageSquare size={20} />
             </button>
@@ -283,6 +360,13 @@ export default function ArticlePage() {
               title="删除"
             >
               <Trash2 size={20} />
+            </button>
+            <button
+              onClick={() => setShowShortcuts(true)}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              title="快捷键 (?)"
+            >
+              <Keyboard size={20} />
             </button>
           </div>
         </div>
@@ -461,6 +545,59 @@ export default function ArticlePage() {
           </aside>
         )}
       </div>
+
+      {/* TTS 悬浮播放器 */}
+      {showTTSPlayer && article && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4">
+          <TTSPlayer text={article.content} title={article.title} />
+        </div>
+      )}
+
+      {/* 快捷键帮助弹窗 */}
+      {showShortcuts && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowShortcuts(false)}>
+          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-semibold flex items-center gap-2">
+                  <Keyboard size={24} />
+                  快捷键
+                </h3>
+                <button
+                  onClick={() => setShowShortcuts(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {[
+                  { key: 'T', action: '切换朗读播放器' },
+                  { key: 'A', action: '切换AI助手面板' },
+                  { key: 'F', action: '收藏/取消收藏' },
+                  { key: 'R', action: '标记已读/未读' },
+                  { key: 'S', action: '生成AI摘要' },
+                  { key: '?', action: '显示快捷键帮助' },
+                  { key: 'Esc', action: '关闭面板/弹窗' },
+                  { key: '⌫', action: '返回首页' },
+                ].map(({ key, action }) => (
+                  <div key={key} className="flex items-center justify-between">
+                    <span className="text-gray-600 dark:text-gray-400">{action}</span>
+                    <kbd className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg font-mono text-sm border border-gray-200 dark:border-gray-600">
+                      {key}
+                    </kbd>
+                  </div>
+                ))}
+              </div>
+
+              <p className="mt-6 text-xs text-gray-500 text-center">
+                按 Esc 或点击外部关闭
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
